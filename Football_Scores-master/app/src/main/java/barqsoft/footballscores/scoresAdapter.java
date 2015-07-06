@@ -1,0 +1,89 @@
+package barqsoft.footballscores;
+
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.support.v4.widget.CursorAdapter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+/**
+ * Created by yehya khaled on 2/26/2015.
+ */
+public class scoresAdapter extends CursorAdapter {
+    public static final int COL_HOME = 3;
+    public static final int COL_AWAY = 4;
+    public static final int COL_HOME_GOALS = 6;
+    public static final int COL_AWAY_GOALS = 7;
+    public static final int COL_DATE = 1;
+    public static final int COL_LEAGUE = 5;
+    public static final int COL_MATCHDAY = 9;
+    public static final int COL_ID = 8;
+    public static final int COL_MATCHTIME = 2;
+    public double detail_match_id = 0;
+    private String FOOTBALL_SCORES_HASHTAG = "#Football_Scores";
+
+    public scoresAdapter(Context context, Cursor cursor, int flags) {
+        super(context, cursor, flags);
+    }
+
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        View mItem = LayoutInflater.from(context).inflate(R.layout.scores_list_item, parent, false);
+        ViewHolder mHolder = new ViewHolder(mItem);
+        mItem.setTag(mHolder);
+        return mItem;
+    }
+
+    //Abhilash:removed extra inflations and cleaned up code
+    @Override
+    public void bindView(View view, final Context context, Cursor cursor) {
+
+        final ViewHolder mHolder = (ViewHolder) view.getTag();
+
+        mHolder.home_name.setText(cursor.getString(COL_HOME));
+        mHolder.home_name.setTypeface(Utilies.get(context, context.getString(R.string.roboto_regular)));
+
+        mHolder.away_name.setText(cursor.getString(COL_AWAY));
+        mHolder.away_name.setTypeface(Utilies.get(context, context.getString(R.string.roboto_regular)));
+
+        mHolder.date.setText(cursor.getString(COL_MATCHTIME));
+        mHolder.date.setTypeface(Utilies.get(context, context.getString(R.string.roboto_regular)));
+
+        mHolder.score.setText(Utilies.getScores(cursor.getInt(COL_HOME_GOALS), cursor.getInt(COL_AWAY_GOALS)));
+
+        mHolder.match_id = cursor.getDouble(COL_ID);
+
+        mHolder.home_crest.setImageResource(Utilies.getTeamCrestByTeamName(
+                cursor.getString(COL_HOME)));
+
+        mHolder.away_crest.setImageResource(Utilies.getTeamCrestByTeamName(
+                cursor.getString(COL_AWAY)
+        ));
+
+        mHolder.match_day.setText(Utilies.getMatchDay(cursor.getInt(COL_MATCHDAY),
+                cursor.getInt(COL_LEAGUE)));
+        mHolder.match_day.setTypeface(Utilies.get(context, context.getString(R.string.roboto_regular)));
+
+        mHolder.league.setText(Utilies.getLeague(cursor.getInt(COL_LEAGUE)));
+        mHolder.league.setTypeface(Utilies.get(context, context.getString(R.string.roboto_regular)));
+
+        mHolder.share_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                context.startActivity(createShareForecastIntent(mHolder.home_name.getText() + " "
+                        + mHolder.score.getText() + " " + mHolder.away_name.getText() + " "));
+            }
+        });
+    }
+
+    public Intent createShareForecastIntent(String ShareText) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, ShareText + FOOTBALL_SCORES_HASHTAG);
+        return shareIntent;
+    }
+
+}
